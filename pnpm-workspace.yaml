@@ -1,0 +1,4 @@
+allowBuilds:
+  # unrs-resolver (used by eslint-import-resolver) ships prebuilt native
+  # bindings, so its optional build script is not required.
+  unrs-resolver: false
