@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getTrends } from "@/lib/trends";
 import { cached } from "@/lib/cache";
 
+export const maxDuration = 60;
+
 // GET /api/trends?q=<brand or item>
 // Returns a Google Trends interest-over-time series. Always 200 — when pytrends
 // is rate-limited the body carries `available: false` so the UI can degrade.

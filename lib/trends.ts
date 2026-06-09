@@ -26,7 +26,7 @@ export async function getTrends(query: string): Promise<TrendsSeries> {
     url.searchParams.set("q", query);
 
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
+    const timer = setTimeout(() => controller.abort(), 12000);
     const res = await fetch(url, { signal: controller.signal }).finally(() =>
       clearTimeout(timer),
     );

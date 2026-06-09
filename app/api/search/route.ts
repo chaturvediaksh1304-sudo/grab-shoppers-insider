@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { getItemTrend } from "@/lib/insider";
 
+// Allow up to 60s — the assembly may call the (free-tier) Render ML service,
+// which can cold-start. Vercel Hobby caps function duration at 60s.
+export const maxDuration = 60;
+
 // GET /api/search?q=<brand or item>
 // Returns an ItemTrend: a price history modeled on the real Google Trends demand
 // curve (anchored to a curated/estimated baseline), enriched with live eBay

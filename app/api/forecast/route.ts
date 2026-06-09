@@ -4,6 +4,10 @@ import type { ForecastResult, PricePoint } from "@/lib/types";
 
 const FORECAST_API_URL = process.env.FORECAST_API_URL ?? "http://127.0.0.1:8000";
 
+// Allow up to 60s so the call can wait through a cold start of the (free-tier)
+// Render ML service. Vercel Hobby caps function duration at 60s.
+export const maxDuration = 60;
+
 interface ForecastBody {
   query?: string;
   history?: PricePoint[];
