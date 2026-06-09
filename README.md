@@ -2,6 +2,10 @@
 
 **Know what to buy before everyone else does.**
 
+🔗 **Live demo: https://grab-shoppers-insider.vercel.app**
+*(First load after idle may take ~30–60s while the free-tier ML service wakes — the page
+renders immediately and the Trends chart + forecast fill in once it's warm.)*
+
 A web app that shows resale price trends + ML-powered forecasts for fashion items.
 It pulls **real Google Trends** search-demand, charts it against a resale price index,
 and runs a **Prophet** time-series model to forecast the next 30 days as
@@ -70,11 +74,36 @@ python/              # forecast.py (Prophet), trends_fetch.py (pytrends), app.py
 __tests__/api/       # route tests
 ```
 
+## Architecture
+
+```
+ Browser
+    │  (only ever calls /api/*)
+    ▼
+ Next.js on Vercel  ──────────────  app/api/{search,trends,forecast}
+    │  server-side fetch                 (serverless functions)
+    │  FORECAST_API_URL
+    ▼
+ FastAPI on Render  ──────────────  python/app.py
+    ├─ POST /forecast → Prophet (python/forecast.py)
+    └─ GET  /trends   → pytrends  (python/trends_fetch.py) → Google Trends
+```
+
+- **Frontend + API routes:** Next.js 14 on **Vercel**. The routes assemble the response and
+  call the ML service server-side, so no keys or Python ever reach the browser.
+- **ML service:** FastAPI on **Render** hosting **Prophet** (forecasts) and **pytrends**
+  (real Google Trends). Prophet is too heavy for serverless, hence a dedicated host.
+- **Price model:** `lib/history.ts` builds a price index from a curated baseline anchored to
+  the real, smoothed Trends demand curve (elasticity-damped, step- and band-capped). Prophet
+  forecasts that curve; the UP/DOWN/STABLE badge is effectively a real demand forecast.
+- **Config:** Vercel env `FORECAST_API_URL` → the Render URL (set in `vercel.json`). Locally,
+  `pnpm dev:all` runs both on `:3000` + `:8000`.
+
 ## Notes
 
-- **No keys yet?** The app still runs — the dashboard and macro grid show a clear
-  "add your eBay keys" prompt, and Google Trends degrades gracefully if rate-limited.
-- **eBay free tier:** 5,000 calls/day. Responses are cached in-memory for 5 minutes.
+- **No keys needed.** Runs on Google Trends + Prophet out of the box; optional eBay keys
+  enrich prices with live listings. Google Trends degrades gracefully if rate-limited.
+- **eBay (optional) free tier:** 5,000 calls/day. Responses are cached in-memory for 5 minutes.
 - The Python ML service stays server-side; the browser only ever calls `/api/*`.
 
 Built by Aksh Chaturvedi.
